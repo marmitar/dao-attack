@@ -1,9 +1,26 @@
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
 
 [profile.default]
+evm_version = "osaka"
 src = "src"
 out = "out"
 libs = ["lib"]
+via_ir = true
+optimizer = true
+optimizer_runs = 100_000
+
+[profile.default.optimizer_details]
+constantOptimizer = true
+yul = true
+
+[profile.default.optimizer_details.yul_details]
+stackAllocation = true
+
+[fuzz]
+runs = 4096
+
+[invariant]
+runs = 256
 
 [fmt]
 line_length = 120
