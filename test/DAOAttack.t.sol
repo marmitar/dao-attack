@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.30;
 
-import { Counter } from "../src/Counter.sol";
+import { DAOAttack } from "../src/DAOAttack.sol";
 import { Test } from "forge-std/Test.sol";
 
-contract CounterTest is Test {
-    Counter public counter;
+contract DAOAttackTest is Test {
+    DAOAttack public counter;
 
     function setUp() public {
-        counter = new Counter();
+        counter = new DAOAttack();
         counter.setNumber(0);
     }
 
