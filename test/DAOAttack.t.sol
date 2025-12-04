@@ -6,11 +6,11 @@ import { Test } from "forge-std/Test.sol";
 import { DAO } from "../src/DAO.sol";
 
 contract DAOTest is Test {
-    uint256 constant CROWDSALE_BLOCK_NUMBER = 1_599_200;
-    uint256 internal daoInitialBalance = 11_725_826.068_359_058_772_488_243 ether;
+    uint256 constant MID_CROWDSALE_BLOCK_NUMBER = 1_500_000;
+    uint256 internal daoInitialBalance = 4_420_466.920_675_732_108_465_682 ether;
 
     function setUp() public virtual {
-        vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), CROWDSALE_BLOCK_NUMBER);
+        vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), MID_CROWDSALE_BLOCK_NUMBER);
     }
 
     function test_initialState() external view {
@@ -65,18 +65,17 @@ contract DAOAttacker {
 contract DAOAttackTest is DAOTest {
     DAOAttacker private attacker;
 
-    uint256 constant BOUGHT_ETHER = 0.9 ether;
-    uint256 constant INITIAL_BALANCE = 0.6 ether;
+    uint256 constant INITIAL_BALANCE = 90_000 ether;
 
     function setUp() public override {
         super.setUp();
         attacker = new DAOAttacker();
 
-        attacker.buyTokens{ value: BOUGHT_ETHER }();
-        daoInitialBalance += 2 * BOUGHT_ETHER / 3;
+        attacker.buyTokens{ value: INITIAL_BALANCE }();
+        daoInitialBalance += INITIAL_BALANCE;
 
         // skip to after crowdsale
-        vm.warp(block.timestamp + 1 days);
+        vm.warp(block.timestamp + 4 weeks);
     }
 
     function test_attackerIsHolder() external view {
@@ -98,7 +97,7 @@ contract DAOAttackTest is DAOTest {
 
         attacker.attack();
 
-        assertEq(address(attacker).balance, 1_074_552_486);
+        assertEq(address(attacker).balance, 0.000_419_025_818_915_865 ether);
         assertEq(DAO.balanceOf(address(attacker)), 0);
     }
 }
