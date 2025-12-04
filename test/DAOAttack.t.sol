@@ -24,40 +24,48 @@ contract DAOTest is Test {
     }
 }
 
+contract DAOAttacker {
+    uint256 private proposalId;
+
+    function buyTokens() external payable {
+        (bool ok,) = address(DAO).call{ value: msg.value }("");
+        require(ok, "Could not buy. Is it in Crowdsale?");
+    }
+
+    function createProposal(string calldata description, uint256 debatingPeriod) external {
+        require(proposalId == 0, "Another proposal was already made");
+        proposalId = DAO.newProposal(address(this), 0, description, "", debatingPeriod, true);
+    }
+
+    function vote(bool supportProposal) external returns (uint256 voteId) {
+        require(proposalId != 0, "No proposal set");
+        return DAO.vote(proposalId, supportProposal);
+    }
+}
+
 contract DAOAttackTest is DAOTest {
-    address immutable ATTACKER = makeAddr("attacker");
+    DAOAttacker private attacker;
 
     uint256 constant BOUGHT_ETHER = 0.9 ether;
     uint256 constant INITIAL_BALANCE = 0.6 ether;
 
     function setUp() public override {
         super.setUp();
+        attacker = new DAOAttacker();
 
-        buyTokens();
+        attacker.buyTokens{ value: BOUGHT_ETHER }();
+        daoInitialBalance += 2 * BOUGHT_ETHER / 3;
 
         // skip to after crowdsale
         vm.warp(block.timestamp + 1 days);
     }
 
-    function buyTokens() private {
-        vm.deal(ATTACKER, 1 ether);
-
-        vm.prank(ATTACKER);
-        (bool ok,) = address(DAO).call{ value: BOUGHT_ETHER }("");
-        require(ok, "Could not buy. Is it in Crowdsale?");
-
-        daoInitialBalance += 2 * BOUGHT_ETHER / 3;
-    }
-
     function test_attackerIsHolder() external view {
-        vm.assertEq(DAO.balanceOf(ATTACKER), INITIAL_BALANCE);
+        vm.assertEq(DAO.balanceOf(address(attacker)), INITIAL_BALANCE);
     }
 
     function test_canCreateProposal() external {
-        vm.prank(ATTACKER);
-        uint256 proposalId = DAO.newProposal(ATTACKER, 0, "A very non-sketchy proposal", "", 10 days, true);
-
-        vm.prank(ATTACKER);
-        DAO.vote(proposalId, false);
+        attacker.createProposal("A very non-sketchy proposal", 10 days);
+        attacker.vote(false);
     }
 }
