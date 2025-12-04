@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.30;
 
+// From https://archive.trufflesuite.com/guides/chain-forking-exploiting-the-dao/
+DAOInterface constant DAO = DAOInterface(0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413);
+
 /// @notice https://github.com/blockchainsllc/DAO/blob/v1.0/DAO.sol
 /// forge-lint: disable-next-item
 /// forgefmt: disable-next-item
@@ -24,8 +27,4 @@ interface DAOInterface {
     /// @param _owner The address from which the balance will be retrieved
     /// @return balance The balance
     function balanceOf(address _owner) external pure returns (uint256 balance);
-}
-
-contract DAOAttack {
-    DAOInterface public constant DAO = DAOInterface(0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413);
 }
