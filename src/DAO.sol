@@ -4,10 +4,25 @@ pragma solidity ^0.8.30;
 // From https://archive.trufflesuite.com/guides/chain-forking-exploiting-the-dao/
 DAOInterface constant DAO = DAOInterface(0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413);
 
+/// @notice https://github.com/blockchainsllc/DAO/blob/v1.0/Token.sol
+/// forge-lint: disable-next-item
+/// forgefmt: disable-next-item
+interface TokenInterface {
+    /// @param _owner The address from which the balance will be retrieved
+    /// @return balance The balance
+    function balanceOf(address _owner) external view returns (uint256 balance);
+
+    /// @notice Send `_amount` tokens to `_to` from `msg.sender`
+    /// @param _to The address of the recipient
+    /// @param _amount The amount of tokens to be transferred
+    /// @return success Whether the transfer was successful or not
+    function transfer(address _to, uint256 _amount) external returns (bool success);
+}
+
 /// @notice https://github.com/blockchainsllc/DAO/blob/v1.0/DAO.sol
 /// forge-lint: disable-next-item
 /// forgefmt: disable-next-item
-interface DAOInterface {
+interface DAOInterface is TokenInterface {
     /// @notice ATTENTION! I confirm to move my remaining ether to a new DAO
     /// with `_newCurator` as the new Curator, as has been
     /// proposed in proposal `_proposalID`. This will burn my tokens. This can
@@ -23,8 +38,4 @@ interface DAOInterface {
         uint _proposalID,
         address _newCurator
     ) external returns (bool _success);
-
-    /// @param _owner The address from which the balance will be retrieved
-    /// @return balance The balance
-    function balanceOf(address _owner) external pure returns (uint256 balance);
 }
