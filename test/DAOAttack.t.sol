@@ -6,12 +6,15 @@ import { Test } from "forge-std/Test.sol";
 import { DAO } from "../src/DAO.sol";
 
 contract DAOAttackTest is Test {
-    uint256 immutable MAINNET_FORK = vm.createFork(vm.envString("MAINNET_RPC_URL"));
-    uint256 constant BLOCK_NUMBER = 1_599_200;
+    uint256 constant BLOCK_NUMBER = 1_598_000;
+    uint256 constant INITIAL_BALANCE = 11_665_078.365_239_790_310_821_263 ether;
 
     function setUp() public {
-        vm.selectFork(MAINNET_FORK);
-        vm.rollFork(MAINNET_FORK, BLOCK_NUMBER);
+        vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), BLOCK_NUMBER);
+    }
+
+    function test_initialState() external view {
+        vm.assertEq(address(DAO).balance, INITIAL_BALANCE);
     }
 
     address constant BITTREX = 0xFBb1b73C4f0BDa4f67dcA266ce6Ef42f520fBB98;
