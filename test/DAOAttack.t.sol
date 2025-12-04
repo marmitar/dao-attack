@@ -1,24 +1,18 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.30;
 
-import { DAOAttack } from "../src/DAOAttack.sol";
 import { Test } from "forge-std/Test.sol";
 
+import { DAOAttack } from "../src/DAOAttack.sol";
+
 contract DAOAttackTest is Test {
-    DAOAttack public counter;
+    DAOAttack public attack = new DAOAttack();
+
+    uint256 immutable MAINNET_FORK = vm.createFork(vm.envString("MAINNET_RPC_URL"));
+    uint256 constant BLOCK_NUMBER = 1599200;
 
     function setUp() public {
-        counter = new DAOAttack();
-        counter.setNumber(0);
-    }
-
-    function test_Increment() public {
-        counter.increment();
-        assertEq(counter.number(), 1);
-    }
-
-    function testFuzz_SetNumber(uint256 x) public {
-        counter.setNumber(x);
-        assertEq(counter.number(), x);
+        vm.selectFork(MAINNET_FORK);
+        vm.rollFork(MAINNET_FORK, BLOCK_NUMBER);
     }
 }
