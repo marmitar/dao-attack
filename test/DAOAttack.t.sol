@@ -33,7 +33,6 @@ contract DAOAttackTest is DAOTest {
     function setUp() public override {
         super.setUp();
 
-        vm.prank(ATTACKER);
         buyTokens();
 
         // skip to after crowdsale
@@ -43,12 +42,22 @@ contract DAOAttackTest is DAOTest {
     function buyTokens() private {
         vm.deal(ATTACKER, 1 ether);
 
+        vm.prank(ATTACKER);
         (bool ok,) = address(DAO).call{ value: BOUGHT_ETHER }("");
         require(ok, "Could not buy. Is it in Crowdsale?");
+
         daoInitialBalance += 2 * BOUGHT_ETHER / 3;
     }
 
     function test_attackerIsHolder() external view {
         vm.assertEq(DAO.balanceOf(ATTACKER), INITIAL_BALANCE);
+    }
+
+    function test_canCreateProposal() external {
+        vm.prank(ATTACKER);
+        uint256 proposalId = DAO.newProposal(ATTACKER, 0, "A very non-sketchy proposal", "", 10 days, true);
+
+        vm.prank(ATTACKER);
+        DAO.vote(proposalId, false);
     }
 }
