@@ -7,14 +7,14 @@ import { DAO } from "../src/DAO.sol";
 
 contract DAOTest is Test {
     uint256 constant CROWDSALE_BLOCK_NUMBER = 1_599_200;
-    uint256 constant DAO_INITIAL_BALANCE = 11_725_826.068_359_058_772_488_243 ether;
+    uint256 internal daoInitialBalance = 11_725_826.068_359_058_772_488_243 ether;
 
     function setUp() public virtual {
         vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), CROWDSALE_BLOCK_NUMBER);
     }
 
     function test_initialState() external view {
-        vm.assertEq(address(DAO).balance, DAO_INITIAL_BALANCE);
+        vm.assertEq(address(DAO).balance, daoInitialBalance);
     }
 
     address constant BITTREX = 0xFBb1b73C4f0BDa4f67dcA266ce6Ef42f520fBB98;
@@ -27,23 +27,28 @@ contract DAOTest is Test {
 contract DAOAttackTest is DAOTest {
     address immutable ATTACKER = makeAddr("attacker");
 
+    uint256 constant BOUGHT_ETHER = 0.9 ether;
+    uint256 constant INITIAL_BALANCE = 0.6 ether;
+
     function setUp() public override {
         super.setUp();
 
-        gainTrust();
+        vm.prank(ATTACKER);
+        buyTokens();
+
+        // skip to after crowdsale
+        vm.warp(block.timestamp + 1 days);
     }
 
-    function gainTrust() private {
-        uint256 donorBalance = DAO.balanceOf(BITTREX);
-        require(donorBalance > 0, "Donor must be a Token Holder");
-        require(donorBalance >= 1 ether, "Our attacker is picky");
+    function buyTokens() private {
+        vm.deal(ATTACKER, 1 ether);
 
-        vm.prank(BITTREX);
-        bool success = DAO.transfer(ATTACKER, 1 ether);
-        require(success, "Donation failed");
+        (bool ok,) = address(DAO).call{ value: BOUGHT_ETHER }("");
+        require(ok, "Could not buy. Is it in Crowdsale?");
+        daoInitialBalance += 2 * BOUGHT_ETHER / 3;
     }
 
     function test_attackerIsHolder() external view {
-        vm.assertEq(DAO.balanceOf(ATTACKER), 1 ether);
+        vm.assertEq(DAO.balanceOf(ATTACKER), INITIAL_BALANCE);
     }
 }
